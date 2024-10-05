@@ -13,16 +13,19 @@ const Login = () => {
   useEffect(() => {
     if (location.state?.message === "Registration complete successfully.") {
       toast.success("Registration complete successfully.");
-    }
+    } else if (location.state?.message === "Authentication failed, Please login.") {
+      toast.error("Authentication failed, Please login.");
+    };
   }, [location.state]);
 
   const handleLogin = async (event) => {
     event.preventDefault();
+    const data = {
+      email: email,
+      password: password,
+    };
     try {
-      await axios.post("http://localhost:3000/login", {
-        email: email,
-        password: password
-      });
+      await axios.post(`${import.meta.env.VITE_BASEURL}/login`, data, { withCredentials: true });
       navigate("/");
     } catch (error) {
       if (error.response.status === 404) {

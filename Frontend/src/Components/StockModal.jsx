@@ -1,66 +1,89 @@
 import { useState, useEffect } from 'react';
 import { toast } from "sonner";
-import axios from "axios";
+import baseAxios from "../../Config/jwtInterceptor";
+import { useNavigate } from 'react-router-dom';
 
-const StockModal = ({ setShowModal, stock }) => {
+const StockModal = ({ setShowModal, selectedStock, stocks, setStocks }) => {
   const [itemName, setItemName] = useState('');
   const [itemDescription, setItemDescription] = useState('');
   const [itemQuantity, setItemQuantity] = useState('');
   const [itemPrice, setItemPrice] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (stock) {
-      setItemName(stock.title);
-      setItemDescription(stock.description);
-      setItemQuantity(stock.quantity);
-      setItemPrice(stock.price);
+    if (selectedStock) {
+      setItemName(selectedStock.itemName);
+      setItemDescription(selectedStock.description);
+      setItemQuantity(selectedStock.quantity);
+      setItemPrice(selectedStock.price);
     }
-  }, [stock]);
+  }, [selectedStock]);
 
   const handleSave = async () => {
-    const trimmedQuantity = parseInt(itemQuantity.trim());
-    const trimmedPrice = parseFloat(itemPrice.trim());
-
-    if (itemName.trim().length < 4 || itemName.trim().length > 15) {
-      toast.error("Name must be 4-15 characters long.");
-      return;
-    };
-
-    if (itemDescription.trim().length < 10 || itemDescription.trim().length > 100) {
-      toast.error("Description must be 10-100 characters long.");
-      return;
-    };
-
-    if (!trimmedQuantity) {
-      toast.error("Quantity must be greater than 0.");
-      return;
-    };
-
-    if (!trimmedPrice) {
-      toast.error("Price must be greater than 0.");
-      return;
-    };
-
     try {
-      await axios.post("http://localhost:3000/stock", {
+
+      const trimmedQuantity = parseInt(itemQuantity.toString().trim());
+      const trimmedPrice = parseFloat(itemPrice.toString().trim());
+
+      if (itemName.trim().length < 4 || itemName.trim().length > 15) {
+        toast.error("Name must be 4-15 characters long.");
+        return;
+      };
+
+      if (itemDescription.trim().length < 10 || itemDescription.trim().length > 100) {
+        toast.error("Description must be 10-100 characters long.");
+        return;
+      };
+
+      if (trimmedQuantity <= 0) {
+        toast.error("Quantity must be greater than 0.");
+        return;
+      };
+
+      if (trimmedPrice <= 0) {
+        toast.error("Price must be greater than 0.");
+        return;
+      };
+
+      const data = {
         itemName: itemName,
         description: itemDescription,
         price: trimmedPrice,
         quantity: trimmedQuantity
-      });
-      toast.success("Stock created successfully.")
-    } catch (error) {
-      if (error.response.status === 400) {
-        toast.error("Failed to create your stock");
-      } else {
-        console.log("Error occur while create my new stock", error);
-        toast.error("Something wrong please try again later");
       }
+
+      if (selectedStock) {
+        data.id = selectedStock.id;
+        await baseAxios.patch("/stock", data);
+        const afterUpdate = stocks.map((stock) => stock.id === selectedStock.id ? data : stock);
+        setStocks(afterUpdate);
+        toast.success("Stock updated successfully.");
+      } else {
+        const response = await baseAxios.post("/stock", data);
+        setStocks([...stocks, response.data]);
+        toast.success("Stock created successfully.");
+      }
+    } catch (error) {
+      handleError(error);
     } finally {
       setShowModal(false);
-    }
+    };
+  };
 
-    setShowModal(false);
+
+  const handleError = (error) => {
+    if (error.response.status === 401) {
+      navigate("/login", { state: { message: "Authentication failed, Please login." } });
+    } else if (error.response.status === 400) {
+      if (selectedStock) {
+        toast.error("No changes found.");
+      } else {
+        toast.error("Failed to update resourse.");
+      }
+    } else {
+      console.error(error);
+      toast.error("Something wrong please try again later.");
+    };
   };
 
   return (
@@ -70,7 +93,7 @@ const StockModal = ({ setShowModal, stock }) => {
         <div className="modal-dialog modal-dialog-centered" role="document" onClick={(e) => e.stopPropagation()}>
           <div className="modal-content">
             <div className="modal-body p-4">
-              <h5 className="modal-title mt-2 mb-4 text-center">{stock ? 'Edit Stock' : 'Add New Stock'}</h5>
+              <h5 className="modal-title mt-2 mb-4 text-center">{selectedStock ? 'Edit Stock' : 'Add New Stock'}</h5>
               <form>
                 <div className="mb-3">
                   <label className="form-label">Item Name</label>

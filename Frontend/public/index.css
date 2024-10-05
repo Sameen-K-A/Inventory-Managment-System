@@ -140,8 +140,8 @@ button:active {
    z-index: 1;
    position: absolute;
    top: -75px;
-   right: -75px;
-   border-radius: 50%;
+   right: -50px;
+   border-radius: 20%;
    -webkit-transition: all .5s ease;
    -o-transition: all .5s ease;
    transition: all .5s ease;
