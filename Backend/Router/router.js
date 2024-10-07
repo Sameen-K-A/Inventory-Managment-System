@@ -14,4 +14,9 @@ router.post("/stock", verifyAccessToken, (req, res) => controller.creatStock(req
 router.patch("/stock", verifyAccessToken, (req, res) => controller.editStock(req, res));
 router.delete("/stock", verifyAccessToken, (req, res) => controller.deleteStock(req, res));
 
+// Customer management
+router.get("/customer", verifyAccessToken, (req, res) => controller.getCustomer(req, res));
+router.post("/customer", verifyAccessToken, (req, res) => controller.creatCustomer(req, res));
+router.delete("/customer", verifyAccessToken, (req, res) => controller.deleteCustomer(req, res));
+
 export default router;

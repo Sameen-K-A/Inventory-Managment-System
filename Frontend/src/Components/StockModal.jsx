@@ -63,10 +63,9 @@ const StockModal = ({ setShowModal, selectedStock, stocks, setStocks }) => {
         setStocks([...stocks, response.data]);
         toast.success("Stock created successfully.");
       }
+      setShowModal(false);
     } catch (error) {
       handleError(error);
-    } finally {
-      setShowModal(false);
     };
   };
 
@@ -84,6 +83,7 @@ const StockModal = ({ setShowModal, selectedStock, stocks, setStocks }) => {
       console.error(error);
       toast.error("Something wrong please try again later.");
     };
+    setShowModal(false);
   };
 
   return (

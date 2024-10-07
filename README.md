@@ -1,3 +1,5 @@
+---
+
 # StockMate - Inventory Management System
 
 ## Project Overview
@@ -25,3 +27,11 @@
 - Followed REST HTTP patterns for API design.
 - Added JWT token-based authentication (access and refresh tokens).
   - Tokens are stored in cookies with `httpOnly` and `secure` flags for improved security.
+
+### Day 03
+
+- Completed the customer management feature:
+  - Implemented create, delete, and list functionality for customers.
+- Added a confirmation prompt for deleting both customer and inventory data to prevent accidental deletions.
+  
+---

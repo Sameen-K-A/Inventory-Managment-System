@@ -1,10 +1,13 @@
 import Stock from "../Model/stockModel.js";
 import User from "../Model/userModel.js";
+import Customer from "../Model/customerModel.js";
 import bcrypt from "bcrypt";
 import { v4 as uuid } from "uuid";
 import { createAccessToken, createRefreshToken } from "../Config/jwtConfig.js";
 
 class Controller {
+
+   //================================================ Login ========================================================//
 
    async login(req, res) {
       try {
@@ -42,6 +45,8 @@ class Controller {
       };
    };
 
+   //================================================ Register ========================================================//
+
    async register(req, res) {
       try {
          const { name, email, password } = req.body;
@@ -54,6 +59,7 @@ class Controller {
          }
 
          const hashedPassword = await bcrypt.hash(password, 10);
+
          const newUser = new User({
             name: name,
             email: email,
@@ -62,14 +68,20 @@ class Controller {
          const newStockOwner = new Stock({
             owner: newUser._id,
          });
+         const newCustomerOwner = new Customer({
+            owner: newUser._id,
+         });
 
-         await Promise.all([newUser.save(), newStockOwner.save()]);
+         await Promise.all([newUser.save(), newStockOwner.save(), newCustomerOwner.save()]);
          res.status(201).send("Registration completed");
       } catch (error) {
          console.log("Registration error", error);
          res.status(500).send("Something went wrong, please try again later.");
       }
    };
+
+   //================================================ Stock management ========================================================//
+   //================================================ Get stock ========================================================//
 
    async getStock(req, res) {
       try {
@@ -80,6 +92,8 @@ class Controller {
          res.status(500).send("Something went wrong, please try again later.");
       };
    };
+
+   //================================================ Create new stock ========================================================//
 
    async creatStock(req, res) {
       try {
@@ -102,6 +116,8 @@ class Controller {
          console.log("Error occur while creating new stock", error);
       };
    };
+
+   //================================================ Edit existing stock ========================================================//
 
    async editStock(req, res) {
       try {
@@ -128,6 +144,8 @@ class Controller {
       };
    };
 
+   //================================================ Delete existing stock ========================================================//
+
    async deleteStock(req, res) {
       try {
          const { productId } = req.body;
@@ -143,6 +161,59 @@ class Controller {
       };
    };
 
-}
+   //================================================ Customer management ========================================================//
+   //================================================ Get customer details ========================================================//
+
+   async getCustomer(req, res) {
+      try {
+         const response = await Customer.findOne({ owner: req.user_id }, { customers: 1, _id: 0 });
+         res.status(200).json({ customers: response.customers });
+      } catch (error) {
+         console.log("Get customer error", error);
+         res.status(500).send("Something went wrong, please try again later.");
+      };
+   };
+
+   //================================================ Create new customer ========================================================//
+
+   async creatCustomer(req, res) {
+      try {
+         const { customerName, customerAddress, customerPhone } = req.body;
+         const newCustomer = {
+            id: uuid().toString(),
+            customerName: customerName,
+            customerAddress: customerAddress,
+            customerPhone: customerPhone,
+         };
+         const isCreated = await Customer.updateOne({ owner: req.user_id }, { $push: { customers: newCustomer } });
+         if (isCreated.modifiedCount === 1) {
+            res.status(201).json(newCustomer);
+         } else {
+            res.status(400).send("Failed to create customer");
+         };
+      } catch (error) {
+         console.log("Create customer error", error);
+         res.status(500).send("Something went wrong, please try again later.");
+      };
+   };
+
+   //================================================ Delete existing customer ========================================================//
+
+   async deleteCustomer(req, res) {
+      try {
+         const { customerId } = req.body;
+         const response = await Customer.updateOne({ owner: req.user_id }, { $pull: { customers: { id: customerId } } });
+         if (response.modifiedCount === 1) {
+            res.status(200).send("Success");
+         } else {
+            res.status(400).send("Failed to delete customer");
+         };
+      } catch (error) {
+         console.log("Delete customer error", error);
+         res.status(500).send("Something went wrong, please try again later.");
+      };
+   };
+
+};
 
 export default Controller;

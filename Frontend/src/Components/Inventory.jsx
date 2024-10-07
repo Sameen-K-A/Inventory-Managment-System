@@ -44,6 +44,24 @@ const Inventory = () => {
     };
   };
 
+  const confirmDeleteToast = (productId) => {
+    toast.dismiss();
+    toast.custom(
+      () => (
+        <div className="bg-dark p-3" style={{ borderRadius: 20 }}>
+          <h6 className="text-light">Are you sure you want to delete this product?</h6>
+          <div className="d-flex justify-content-end gap-2 mt-3">
+            <button className="btn btn-sm btn-secondary" onClick={() => toast.dismiss()}>Cancel</button>
+            <button className="btn btn-sm btn-danger" onClick={() => { handleDeleteProduct(productId); toast.dismiss() }}>
+              Confirm
+            </button>
+          </div>
+        </div>
+      ),
+      { duration: Infinity }
+    );
+  };
+
   const handleError = (error) => {
     if (error.response.status === 401) {
       navigate("/login", { state: { message: "Authentication failed, Please login." } });
@@ -80,7 +98,7 @@ const Inventory = () => {
                 <p className="ag-courses-item_date-box"><span className="ag-courses-item_date">Price: </span>₹{stock.price}.00</p>
                 <div className="ag-courses-item_actions">
                   <MdEdit className="icon edit-icon" onClick={() => handleEditClick(stock)} />
-                  <RiDeleteBin6Fill className="icon delete-icon" onClick={() => handleDeleteProduct(stock.id)} />
+                  <RiDeleteBin6Fill className="icon delete-icon" onClick={() => confirmDeleteToast(stock.id)} />
                 </div>
               </div>
             </div>
