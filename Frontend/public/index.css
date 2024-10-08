@@ -201,3 +201,25 @@ button:active {
       font-size: 16px;
    }
 }
+
+.custom-btn {
+   width: 120px;
+   height: 80px;
+   transition: background-color 0.3s ease;
+   border: 1px solid rgba(0, 0, 0, 0.212);
+}
+
+.pdf-btn:hover {
+   background-color: red;
+   color: white;
+}
+
+.excel-btn:hover {
+   background-color: green;
+   color: white;
+}
+
+.email-btn:hover {
+   background-color: #007bff;
+   color: white;
+}

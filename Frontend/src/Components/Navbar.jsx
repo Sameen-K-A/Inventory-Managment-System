@@ -4,6 +4,8 @@ import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import { FaUserCircle } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import baseAxios from '../../Config/jwtInterceptor';
 
 export const Logo = () => {
    return (
@@ -13,9 +15,36 @@ export const Logo = () => {
    );
 };
 
-const NavScrollExample = () => {
+const UserNavbar = () => {
 
    const navigate = useNavigate();
+   const logout = async () => {
+      try {
+         await baseAxios.get("/logout");
+         localStorage.removeItem("userAuth")
+         localStorage.removeItem("customers")
+         localStorage.removeItem("inventoryStocks")
+         navigate("/login")
+      } catch (error) {
+         toast.error("Something wrong please try again later.");
+      };
+   };
+
+   const confirmLogoutToast = () => {
+      toast.dismiss();
+      toast.custom(
+         () => (
+            <div className="bg-dark p-3" style={{ borderRadius: 20 }}>
+               <h6 className="text-light">Do you want to logout from <b>StockMate</b>?</h6>
+               <div className="d-flex justify-content-end gap-2 mt-3">
+                  <button className="btn btn-sm btn-secondary" onClick={() => toast.dismiss()}>Cancel</button>
+                  <button className="btn btn-sm btn-danger" onClick={() => { logout(); toast.dismiss() }}>Logout</button>
+               </div>
+            </div>
+         ),
+         { duration: Infinity }
+      );
+   };
 
    return (
       <Navbar expand="lg" className="px-5 py-3" style={{ borderBottom: "1px solid red" }}>
@@ -24,15 +53,15 @@ const NavScrollExample = () => {
             <Navbar.Toggle aria-controls="navbarScroll" />
             <Navbar.Collapse id="navbarScroll">
                <Nav className="me-auto my-2 my-lg-0" navbarScroll>
-                  <Nav.Link onClick={() => navigate("/")}>Home</Nav.Link>
                   <Nav.Link onClick={() => navigate("/inventory")}>Inventory</Nav.Link>
                   <Nav.Link onClick={() => navigate("/customer")}>Customer</Nav.Link>
+                  <Nav.Link onClick={() => navigate("/sales")}>Sales</Nav.Link>
                </Nav>
                <NavDropdown title={<FaUserCircle size={30} />} align="end" >
                   <NavDropdown.Item>About us</NavDropdown.Item>
                   <NavDropdown.Item>Contact</NavDropdown.Item>
                   <NavDropdown.Divider />
-                  <NavDropdown.Item onClick={() => navigate("/login")}>Logout</NavDropdown.Item>
+                  <NavDropdown.Item onClick={confirmLogoutToast}>Logout</NavDropdown.Item>
                </NavDropdown>
             </Navbar.Collapse>
          </Container>
@@ -40,4 +69,4 @@ const NavScrollExample = () => {
    );
 }
 
-export default NavScrollExample;
+export default UserNavbar;

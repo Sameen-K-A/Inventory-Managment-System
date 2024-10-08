@@ -4,6 +4,7 @@ import Customer from "../Model/customerModel.js";
 import bcrypt from "bcrypt";
 import { v4 as uuid } from "uuid";
 import { createAccessToken, createRefreshToken } from "../Config/jwtConfig.js";
+import Sale from "../Model/salesModel.js";
 
 class Controller {
 
@@ -71,8 +72,11 @@ class Controller {
          const newCustomerOwner = new Customer({
             owner: newUser._id,
          });
+         const newSales = new Sale({
+            owner: newUser._id,
+         });
 
-         await Promise.all([newUser.save(), newStockOwner.save(), newCustomerOwner.save()]);
+         await Promise.all([newUser.save(), newStockOwner.save(), newCustomerOwner.save(), newSales.save()]);
          res.status(201).send("Registration completed");
       } catch (error) {
          console.log("Registration error", error);
@@ -211,6 +215,59 @@ class Controller {
       } catch (error) {
          console.log("Delete customer error", error);
          res.status(500).send("Something went wrong, please try again later.");
+      };
+   };
+
+   //================================================ Sales mangement ========================================================//
+   //================================================ Get sales list ========================================================//
+
+   async getSales(req, res) {
+      try {
+         const response = await Sale.findOne({ owner: req.user_id }, { _id: 0, sales: 1 });
+         res.status(200).json({ sales: response.sales });
+      } catch (error) {
+         console.log("Get sales error", error);
+         res.status(500).send("Something went wrong, please try again later.");
+      };
+   };
+
+   //================================================ Get sales list ========================================================//
+
+   async createSale(req, res) {
+      try {
+         const { customerName, productName, productID, quantity, price } = req.body;
+         const today = new Date();
+         const newSaleDetails = {
+            id: uuid().toString(),
+            customerName: customerName,
+            productName: productName,
+            quantity: quantity,
+            price: price,
+            date: `${today.toLocaleTimeString()}, ${today.toLocaleDateString()}`
+         };
+         const [productUpdation, salesCreation] = await Promise.all([
+            Stock.updateOne({ owner: req.user_id, 'stocks.id': productID }, { $inc: { 'stocks.$.quantity': -quantity } }),
+            Sale.updateOne({ owner: req.user_id }, { $push: { sales: newSaleDetails } })
+         ]);
+         if (productUpdation.modifiedCount === 1 && salesCreation.modifiedCount === 1) {
+            res.status(200).json(newSaleDetails);
+         } else {
+            res.status(400).send("Failed to create new order");
+         };
+      } catch (error) {
+         console.log("Get sales error", error);
+         res.status(500).send("Something went wrong, please try again later.");
+      };
+   };
+
+   async logout(req, res) {
+      try {
+         res.clearCookie("AccessToken", { httpOnly: true });
+         res.clearCookie("RefreshToken", { httpOnly: true });
+         res.status(200).send('Logged out successfully');
+      } catch (error) {
+         console.log("Logout error", error);
+         res.status(500).send("Something wrong please try again later")
       };
    };
 

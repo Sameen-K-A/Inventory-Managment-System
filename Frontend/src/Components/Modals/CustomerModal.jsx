@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import baseAxios from '../../Config/jwtInterceptor';
+import baseAxios from '../../../Config/jwtInterceptor';
 import { toast } from 'sonner';
 
 const CustomerModal = ({ setShowModal, customers, setCustomers, handleError }) => {
@@ -41,7 +41,9 @@ const CustomerModal = ({ setShowModal, customers, setCustomers, handleError }) =
         customerAddress: customerAddress.trim(),
         customerPhone: customerPhone.trim()
       });
-      setCustomers((prevCustomers) => [...prevCustomers, response.data]);
+      const afterCreate = [...customers, response.data];
+      setCustomers(afterCreate);
+      localStorage.setItem("customers", JSON.stringify(afterCreate));
       setShowModal(false);
       toast.success("Customer added successfully!");
     } catch (error) {

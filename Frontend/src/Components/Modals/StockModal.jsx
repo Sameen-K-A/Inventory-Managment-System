@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { toast } from "sonner";
-import baseAxios from "../../Config/jwtInterceptor";
+import baseAxios from "../../../Config/jwtInterceptor";
 import { useNavigate } from 'react-router-dom';
 
 const StockModal = ({ setShowModal, selectedStock, stocks, setStocks }) => {
@@ -25,8 +25,8 @@ const StockModal = ({ setShowModal, selectedStock, stocks, setStocks }) => {
       const trimmedQuantity = parseInt(itemQuantity.toString().trim());
       const trimmedPrice = parseFloat(itemPrice.toString().trim());
 
-      if (itemName.trim().length < 4 || itemName.trim().length > 15) {
-        toast.error("Name must be 4-15 characters long.");
+      if (itemName.trim().length < 3 || itemName.trim().length > 50) {
+        toast.error("Name must be 3-50 characters long.");
         return;
       };
 
@@ -57,10 +57,13 @@ const StockModal = ({ setShowModal, selectedStock, stocks, setStocks }) => {
         await baseAxios.patch("/stock", data);
         const afterUpdate = stocks.map((stock) => stock.id === selectedStock.id ? data : stock);
         setStocks(afterUpdate);
+        localStorage.setItem("inventoryStocks", JSON.stringify(afterUpdate));
         toast.success("Stock updated successfully.");
       } else {
         const response = await baseAxios.post("/stock", data);
-        setStocks([...stocks, response.data]);
+        const afterCreate = [...stocks, response.data];
+        setStocks(afterCreate);
+        localStorage.setItem("inventoryStocks", JSON.stringify(afterCreate));
         toast.success("Stock created successfully.");
       }
       setShowModal(false);

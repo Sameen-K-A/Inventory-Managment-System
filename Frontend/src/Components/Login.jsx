@@ -26,7 +26,8 @@ const Login = () => {
     };
     try {
       await axios.post(`${import.meta.env.VITE_BASEURL}/login`, data, { withCredentials: true });
-      navigate("/");
+      localStorage.setItem("userAuth", JSON.stringify(true));
+      navigate("/inventory");
     } catch (error) {
       if (error.response.status === 404) {
         toast.error("Email is not found.");
@@ -46,10 +47,10 @@ const Login = () => {
         <form>
 
           <label>E-Mail</label>
-          <input type="email" className="red_input" placeholder="Enter you email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input type="email" autoComplete="email" className="red_input" placeholder="Enter you email" value={email} onChange={(e) => setEmail(e.target.value)} />
 
           <label>Password</label>
-          <input type="text" className="red_input" placeholder="Enter your password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <input type="password" className="red_input" placeholder="Enter your password" value={password} onChange={(e) => setPassword(e.target.value)} />
 
           <button type="submit" onClick={(e) => handleLogin(e)}>Submit</button>
 

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import CustomerModal from './CustomerModal';
+import CustomerModal from './Modals/CustomerModal';
 import baseAxios from "../../Config/jwtInterceptor";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import UserNavbar from "./Navbar";
 import NoDataFound from "./NoDataFound";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -15,8 +16,14 @@ const Customer = () => {
   useEffect(() => {
     (async () => {
       try {
-        const response = await baseAxios.get("/customer")
-        setCustomers(response.data?.customers);
+        const localStorageData = localStorage.getItem("customers");
+        if (localStorageData) {
+          setCustomers(JSON.parse(localStorageData));
+        } else {
+          const response = await baseAxios.get("/customer")
+          setCustomers(response.data?.customers);
+          localStorage.setItem("customers", JSON.stringify(response.data.customers));
+        }
       } catch (error) {
         handleError(error);
       };
@@ -44,9 +51,9 @@ const Customer = () => {
   const handleDeleteCustomer = async (customerId) => {
     try {
       await baseAxios.delete("/customer", { data: { customerId: customerId } });
-      setCustomers((prevCustomers) =>
-        prevCustomers.filter((customer) => customer.id !== customerId)
-      );
+      const afterDelete = customers.filter((customer) => customer.id !== customerId)
+      setCustomers(afterDelete);
+      localStorage.setItem("customers", JSON.stringify(afterDelete));
       toast.success("Customer deleted successfully.");
     } catch (error) {
       handleError(error);
@@ -69,6 +76,7 @@ const Customer = () => {
 
   return (
     <>
+      <UserNavbar />
       <div className="container mt-5">
         <div className="row">
           <div className="col">

@@ -33,5 +33,12 @@
 - Completed the customer management feature:
   - Implemented create, delete, and list functionality for customers.
 - Added a confirmation prompt for deleting both customer and inventory data to prevent accidental deletions.
+
+### Day 04
+
+- Implemented sales tracking and reporting with filtering options.
+- Added download options (PDF, Excel, Print) for data export.
+- Secured routes with JWT-based access tokens and completed form validation.
+- Persisted data in `localStorage` to reduce redundant API calls.
   
 ---

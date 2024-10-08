@@ -12,41 +12,56 @@ const Signup = () => {
 
    const handleRegistration = async (event) => {
       event.preventDefault();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const nameRegex = /^[A-Za-z\s]{3,15}$/;
+
+      if (!name.trim().match(nameRegex)) {
+         toast.error("Name must be between 3 and 15 characters and contain only letters and spaces.");
+         return;
+      }
+
+      if (!email.trim().match(emailRegex)) {
+         toast.error("Please enter a valid email address.");
+         return;
+      }
+
+      if (password.trim().length < 8) {
+         toast.error("Password must be at least 8 characters long.");
+         return;
+      }
+
       try {
-         await axios.post("http://localhost:3000/register", {
-            name: name,
-            email: email,
-            password: password
+         await axios.post(`${import.meta.env.VITE_BASEURL}/register`, {
+            name: name.trim(),
+            email: email.trim(),
+            password: password.trim(),
          });
          navigate("/login", { state: { message: "Registration complete successfully." } });
       } catch (error) {
-         if (error.response.status === 409) {
-            toast.error("Email already exist");
+         if (error.response?.status === 409) {
+            toast.error("Email already exists.");
          } else {
             console.log(error);
-            toast.error("Something wrong please try again later.");
-         };
-      };
+            toast.error("Something went wrong, please try again later.");
+         }
+      }
    };
 
    return (
       <div className="wrapper signUp">
          <div className="form">
             <div className="heading">SIGNUP</div>
-            <form>
 
-               <label htmlFor="name">Name</label>
-               <input type="text" className="red_input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter your name" />
+            <label htmlFor="name">Name</label>
+            <input type="text" autoComplete="name" className="red_input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter your name" />
 
-               <label htmlFor="name">E-Mail</label>
-               <input type="text" className="red_input" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter your email" />
+            <label htmlFor="name">E-Mail</label>
+            <input type="text" autoComplete="email" className="red_input" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter your email" />
 
-               <label htmlFor="password">Password</label>
-               <input type="password" className="red_input" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter you password" />
+            <label htmlFor="password">Password</label>
+            <input type="password" className="red_input" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter you password" />
 
-               <button type="submit" onClick={(e) => handleRegistration(e)}>Submit</button>
-
-            </form>
+            <button type="submit" onClick={(e) => handleRegistration(e)}>Submit</button>
             <p>
                Have an account ? <u onClick={() => navigate("/login")}> Login </u>
             </p>
@@ -55,4 +70,4 @@ const Signup = () => {
    );
 };
 
-export default Signup
+export default Signup;

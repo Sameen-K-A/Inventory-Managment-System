@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import StockModal from './StockModal';
+import StockModal from './Modals/StockModal';
 import { RiDeleteBin6Fill } from "react-icons/ri";
 import { MdEdit } from "react-icons/md";
 import { toast } from 'sonner';
 import baseAxios from "../../Config/jwtInterceptor";
 import { useNavigate } from 'react-router-dom';
+import UserNavbar from "./Navbar"
 import NoDataFound from './NoDataFound';
 
 const Inventory = () => {
@@ -27,8 +28,14 @@ const Inventory = () => {
   useEffect(() => {
     (async () => {
       try {
-        const response = await baseAxios.get("/stock")
-        setStocks(response.data?.stocks);
+        const localStorageData = localStorage.getItem("inventoryStocks");
+        if (localStorageData) {
+          setStocks(JSON.parse(localStorageData));
+        } else {
+          const response = await baseAxios.get("/stock")
+          setStocks(response.data?.stocks);
+          localStorage.setItem("inventoryStocks", JSON.stringify(response.data.stocks));
+        };
       } catch (error) {
         handleError(error);
       };
@@ -38,7 +45,9 @@ const Inventory = () => {
   const handleDeleteProduct = async (productId) => {
     try {
       await baseAxios.delete("/stock", { data: { productId: productId } });
-      setStocks((prevStocks) => prevStocks.filter((stock) => stock.id !== productId));
+      const updatedStocks = stocks.filter((stock) => stock.id !== productId);
+      setStocks(updatedStocks);
+      localStorage.setItem("inventoryStocks", JSON.stringify(updatedStocks));
     } catch (error) {
       handleError(error);
     };
@@ -76,41 +85,44 @@ const Inventory = () => {
   const filteredStocks = stocks.filter(stock => (stock.itemName.toLowerCase().includes(searchData.trim().toLowerCase()) || stock.description.toLowerCase().includes(searchData.trim().toLowerCase())));
 
   return (
-    <div className="container mt-5">
-      <div className="row">
-        <div className="col">
-          <h4 className="text-left"><b>My Inventories</b></h4>
+    <>
+      <UserNavbar />
+      <div className="container mt-5">
+        <div className="row">
+          <div className="col">
+            <h4 className="text-left"><b>My Inventories</b></h4>
+          </div>
+          <div className="col-auto d-flex gap-2">
+            <input type="search" className="red_input" placeholder="Enter name or description" aria-label="Search" value={searchData} onChange={(e) => setSearchData(e.target.value)} />
+            <button className="btn btn-dark" onClick={addNewStock}>Add new stock</button>
+          </div>
         </div>
-        <div className="col-auto d-flex gap-2">
-          <input type="search" className="red_input" placeholder="Enter name or description" aria-label="Search" value={searchData} onChange={(e) => setSearchData(e.target.value)} />
-          <button className="btn btn-danger" onClick={addNewStock}>Add new stock</button>
-        </div>
-      </div>
-      <div className="ag-courses_box">
-        {filteredStocks.length > 0 ? (
-          filteredStocks.map((stock) => (
-            <div className="ag-courses_item" key={stock.id}>
-              <div className="ag-courses-item_link">
-                <div className="ag-courses-item_bg" />
-                <p className="ag-courses-item_title">{stock.itemName}</p>
-                <p className="ag-courses-item_date-box"><span className="ag-courses-item_date">Description: </span>{stock.description}</p>
-                <p className="ag-courses-item_date-box"><span className="ag-courses-item_date">Quantity: </span>{stock.quantity}</p>
-                <p className="ag-courses-item_date-box"><span className="ag-courses-item_date">Price: </span>₹{stock.price}.00</p>
-                <div className="ag-courses-item_actions">
-                  <MdEdit className="icon edit-icon" onClick={() => handleEditClick(stock)} />
-                  <RiDeleteBin6Fill className="icon delete-icon" onClick={() => confirmDeleteToast(stock.id)} />
+        <div className="ag-courses_box">
+          {filteredStocks.length > 0 ? (
+            filteredStocks.map((stock) => (
+              <div className="ag-courses_item" key={stock.id}>
+                <div className="ag-courses-item_link">
+                  <div className="ag-courses-item_bg" />
+                  <p className="ag-courses-item_title">{stock.itemName}</p>
+                  <p className="ag-courses-item_date-box"><span className="ag-courses-item_date">Description: </span>{stock.description}</p>
+                  <p className="ag-courses-item_date-box"><span className="ag-courses-item_date">Quantity: </span>{stock.quantity}</p>
+                  <p className="ag-courses-item_date-box"><span className="ag-courses-item_date">Price: </span>₹{stock.price}.00</p>
+                  <div className="ag-courses-item_actions">
+                    <MdEdit className="icon edit-icon" onClick={() => handleEditClick(stock)} />
+                    <RiDeleteBin6Fill className="icon delete-icon" onClick={() => confirmDeleteToast(stock.id)} />
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
-        ) : (
-          <NoDataFound />
+            ))
+          ) : (
+            <NoDataFound />
+          )}
+        </div>
+        {showModal && (
+          <StockModal setShowModal={setShowModal} selectedStock={selectedStock} stocks={stocks} setStocks={setStocks} />
         )}
       </div>
-      {showModal && (
-        <StockModal setShowModal={setShowModal} selectedStock={selectedStock} stocks={stocks} setStocks={setStocks} />
-      )}
-    </div>
+    </>
   );
 };
 
