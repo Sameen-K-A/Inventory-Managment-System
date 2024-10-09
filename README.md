@@ -1,5 +1,3 @@
----
-
 # StockMate - Inventory Management System
 
 ## Project Overview
@@ -40,5 +38,3 @@
 - Added download options (PDF, Excel, Print) for data export.
 - Secured routes with JWT-based access tokens and completed form validation.
 - Persisted data in `localStorage` to reduce redundant API calls.
-  
----
