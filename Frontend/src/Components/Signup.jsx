@@ -14,6 +14,7 @@ const Signup = () => {
       event.preventDefault();
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       const nameRegex = /^[A-Za-z\s]{3,15}$/;
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
 
       if (!name.trim().match(nameRegex)) {
          toast.error("Name must be between 3 and 15 characters and contain only letters and spaces.");
@@ -25,8 +26,8 @@ const Signup = () => {
          return;
       }
 
-      if (password.trim().length < 8) {
-         toast.error("Password must be at least 8 characters long.");
+      if (!password.trim().match(passwordRegex)) {
+         toast.error("Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number.");
          return;
       }
 
@@ -59,7 +60,7 @@ const Signup = () => {
             <input type="text" autoComplete="email" className="red_input" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter your email" />
 
             <label htmlFor="password">Password</label>
-            <input type="password" className="red_input" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter you password" />
+            <input type="password" className="red_input" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" />
 
             <button type="submit" onClick={(e) => handleRegistration(e)}>Submit</button>
             <p>

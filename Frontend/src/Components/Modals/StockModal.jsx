@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { toast } from "sonner";
-import baseAxios from "../../../Config/jwtInterceptor";
+import baseAxios from "../../Config/jwtInterceptor";
 import { useNavigate } from 'react-router-dom';
 
 const StockModal = ({ setShowModal, selectedStock, stocks, setStocks }) => {
@@ -35,8 +35,8 @@ const StockModal = ({ setShowModal, selectedStock, stocks, setStocks }) => {
         return;
       };
 
-      if (trimmedQuantity <= 0) {
-        toast.error("Quantity must be greater than 0.");
+      if (trimmedQuantity < 0) {
+        toast.error("Quantity must be positive number.");
         return;
       };
 
@@ -53,7 +53,7 @@ const StockModal = ({ setShowModal, selectedStock, stocks, setStocks }) => {
       }
 
       if (selectedStock) {
-        data.id = selectedStock.id;
+        data.itemID = selectedStock.itemID;
         await baseAxios.patch("/stock", data);
         const afterUpdate = stocks.map((stock) => stock.id === selectedStock.id ? data : stock);
         setStocks(afterUpdate);

@@ -1,24 +1,22 @@
 import { Schema, model } from "mongoose";
 
 const customerSchema = new Schema({
-   owner: {
+   ownerID: {
       type: Schema.ObjectId,
       ref: "User",
    },
-   customers: [{
-      id: {
-         type: String
-      },
-      customerName: {
-         type: String
-      },
-      customerAddress: {
-         type: String
-      },
-      customerPhone: {
-         type: String
-      }
-   }]
+   customerID: {
+      type: String,
+   },
+   customerName: {
+      type: String
+   },
+   customerAddress: {
+      type: String
+   },
+   customerPhone: {
+      type: String
+   }
 }, {
    versionKey: false,
 });

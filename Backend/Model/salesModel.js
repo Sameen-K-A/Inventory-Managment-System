@@ -1,30 +1,28 @@
 import { Schema, model } from "mongoose";
 
 const salesSchema = new Schema({
-   owner: {
+   ownerID: {
       type: Schema.ObjectId,
       ref: "User",
    },
-   sales: [{
-      id: {
-         type: String
-      },
-      customerName: {
-         type: String
-      },
-      productName: {
-         type: String
-      },
-      quantity: {
-         type: Number
-      },
-      price: {
-         type: Number
-      },
-      date: {
-         type: String
-      }
-   }]
+   saleID: {
+      type: String
+   },
+   customerName: {
+      type: String
+   },
+   productName: {
+      type: String
+   },
+   quantity: {
+      type: Number
+   },
+   price: {
+      type: Number
+   },
+   date: {
+      type: String
+   }
 }, {
    versionKey: false,
 });

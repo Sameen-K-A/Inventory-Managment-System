@@ -4,7 +4,7 @@ import SalesModal from './Modals/SalesModal';
 import ShareModal from './Modals/ShareModal';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import baseAxios from '../../Config/jwtInterceptor';
+import baseAxios from '../Config/jwtInterceptor';
 import UserNavbar from './Navbar';
 
 const Sales = () => {
@@ -17,8 +17,13 @@ const Sales = () => {
    useEffect(() => {
       (async () => {
          try {
-            const response = await baseAxios.get("/sales");
-            setSales(response.data.sales);
+            const localSalesData = localStorage.getItem("salesData");
+            if (localSalesData) {
+               setSales(JSON.parse(localSalesData));
+            } else {
+               const response = await baseAxios.get("/sales");
+               setSales(response.data);
+            }
          } catch (error) {
             handleError(error);
          }
@@ -66,7 +71,7 @@ const Sales = () => {
                   </thead>
                   <tbody>
                      {sales.map((data, index) => (
-                        <tr key={data.id} style={{ verticalAlign: "middle" }}>
+                        <tr key={data.saleID} style={{ verticalAlign: "middle" }}>
                            <td>{index + 1}</td>
                            <td>{data.productName}</td>
                            <td>{data.customerName}</td>
@@ -81,7 +86,7 @@ const Sales = () => {
                <div className="mt-5"><NoDataFound /></div>
             )}
             {showModal && (
-               <SalesModal setShowModal={setShowModal} handleError={handleError} setSales={setSales} />
+               <SalesModal setShowModal={setShowModal} handleError={handleError} sales={sales} setSales={setSales} />
             )}
             {showShareModal && (
                <ShareModal setShowShareModal={setShowShareModal} tableRef={tableRef} />

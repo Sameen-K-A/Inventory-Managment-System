@@ -51,8 +51,6 @@ class Controller {
    async register(req, res) {
       try {
          const { name, email, password } = req.body;
-         console.log(name, email, password);
-
          const alreadyExist = await User.findOne({ email: email });
          if (alreadyExist) {
             console.log("Email already exists.");
@@ -66,17 +64,8 @@ class Controller {
             email: email,
             password: hashedPassword,
          });
-         const newStockOwner = new Stock({
-            owner: newUser._id,
-         });
-         const newCustomerOwner = new Customer({
-            owner: newUser._id,
-         });
-         const newSales = new Sale({
-            owner: newUser._id,
-         });
 
-         await Promise.all([newUser.save(), newStockOwner.save(), newCustomerOwner.save(), newSales.save()]);
+         await newUser.save();
          res.status(201).send("Registration completed");
       } catch (error) {
          console.log("Registration error", error);
@@ -89,8 +78,8 @@ class Controller {
 
    async getStock(req, res) {
       try {
-         const response = await Stock.findOne({ owner: req.user_id }, { stocks: 1, _id: 0 });
-         res.status(200).json({ stocks: response.stocks });
+         const response = await Stock.find({ ownerID: req.user_id }, { _id: 0, ownerID: 0 });
+         res.status(200).json(response);
       } catch (error) {
          console.log("Get stock error", error);
          res.status(500).send("Something went wrong, please try again later.");
@@ -103,14 +92,17 @@ class Controller {
       try {
          const { itemName, description, price, quantity } = req.body;
          const newStock = {
-            id: uuid().toString(),
+            ownerID: req.user_id,
+            itemID: uuid().toString(),
             itemName: itemName,
             description: description,
             price: parseInt(price),
             quantity: parseInt(quantity),
          };
-         const isCreated = await Stock.updateOne({ owner: req.user_id }, { $push: { stocks: newStock } });
-         if (isCreated.modifiedCount === 1) {
+         const isCreated = await Stock.create(newStock);
+         console.log(isCreated)
+         if (isCreated) {
+            delete newStock.ownerID;
             res.status(201).json(newStock);
          } else {
             res.status(400).send("Failed to create your stock");
@@ -125,15 +117,15 @@ class Controller {
 
    async editStock(req, res) {
       try {
-         const { id, itemName, description, price, quantity } = req.body;
+         const { itemID, itemName, description, price, quantity } = req.body;
          const response = await Stock.updateOne(
-            { owner: req.user_id, "stocks.id": id },
+            { itemID: itemID },
             {
                $set: {
-                  "stocks.$.itemName": itemName,
-                  "stocks.$.description": description,
-                  "stocks.$.price": parseFloat(price),
-                  "stocks.$.quantity": parseInt(quantity)
+                  itemName: itemName,
+                  description: description,
+                  price: parseFloat(price),
+                  quantity: parseInt(quantity)
                },
             },
          );
@@ -152,9 +144,10 @@ class Controller {
 
    async deleteStock(req, res) {
       try {
-         const { productId } = req.body;
-         const response = await Stock.updateOne({ owner: req.user_id }, { $pull: { stocks: { id: productId } } });
-         if (response.modifiedCount === 1) {
+         const { productId } = req.query;
+         const response = await Stock.deleteOne({ itemID: productId });
+         console.log(response)
+         if (response.deletedCount === 1) {
             res.status(200).send("Success");
          } else {
             res.status(400).send("Failed to delete your stock");
@@ -165,13 +158,32 @@ class Controller {
       };
    };
 
+   //================================================ Search stocks in backend ========================================================//
+
+   async searchStock(req, res) {
+      try {
+         const searchData = req.query.searchData;
+         const response = await Stock.find({
+            ownerID: req.user_id,
+            $or: [
+               { itemName: { $regex: searchData, $options: 'i' } },
+               { description: { $regex: searchData, $options: 'i' } }
+            ]
+         });
+         res.status(200).json(response);
+      } catch (error) {
+         console.error(error);
+         res.status(500).send("Something went wrong, please try again later.");
+      }
+   }
+
    //================================================ Customer management ========================================================//
    //================================================ Get customer details ========================================================//
 
    async getCustomer(req, res) {
       try {
-         const response = await Customer.findOne({ owner: req.user_id }, { customers: 1, _id: 0 });
-         res.status(200).json({ customers: response.customers });
+         const response = await Customer.find({ ownerID: req.user_id }, { _id: 0, ownerID: 0 });
+         res.status(200).json(response);
       } catch (error) {
          console.log("Get customer error", error);
          res.status(500).send("Something went wrong, please try again later.");
@@ -184,13 +196,14 @@ class Controller {
       try {
          const { customerName, customerAddress, customerPhone } = req.body;
          const newCustomer = {
-            id: uuid().toString(),
+            ownerID: req.user_id,
+            customerID: uuid().toString(),
             customerName: customerName,
             customerAddress: customerAddress,
             customerPhone: customerPhone,
          };
-         const isCreated = await Customer.updateOne({ owner: req.user_id }, { $push: { customers: newCustomer } });
-         if (isCreated.modifiedCount === 1) {
+         const isCreated = await Customer.create(newCustomer);
+         if (isCreated) {
             res.status(201).json(newCustomer);
          } else {
             res.status(400).send("Failed to create customer");
@@ -205,9 +218,9 @@ class Controller {
 
    async deleteCustomer(req, res) {
       try {
-         const { customerId } = req.body;
-         const response = await Customer.updateOne({ owner: req.user_id }, { $pull: { customers: { id: customerId } } });
-         if (response.modifiedCount === 1) {
+         const { customerId } = req.query;
+         const response = await Customer.deleteOne({ customerID: customerId });
+         if (response.deletedCount === 1) {
             res.status(200).send("Success");
          } else {
             res.status(400).send("Failed to delete customer");
@@ -223,8 +236,8 @@ class Controller {
 
    async getSales(req, res) {
       try {
-         const response = await Sale.findOne({ owner: req.user_id }, { _id: 0, sales: 1 });
-         res.status(200).json({ sales: response.sales });
+         const response = await Sale.find({ ownerID: req.user_id }, { _id: 0, ownerID: 0 });
+         res.status(200).json(response);
       } catch (error) {
          console.log("Get sales error", error);
          res.status(500).send("Something went wrong, please try again later.");
@@ -238,18 +251,19 @@ class Controller {
          const { customerName, productName, productID, quantity, price } = req.body;
          const today = new Date();
          const newSaleDetails = {
-            id: uuid().toString(),
+            ownerID: req.user_id,
+            saleID: uuid().toString(),
             customerName: customerName,
             productName: productName,
-            quantity: quantity,
-            price: price,
-            date: `${today.toLocaleTimeString()}, ${today.toLocaleDateString()}`
+            quantity: parseInt(quantity),
+            price: parseInt(price),
+            date: `${today.toLocaleDateString()}, ${today.toLocaleTimeString()}`
          };
          const [productUpdation, salesCreation] = await Promise.all([
-            Stock.updateOne({ owner: req.user_id, 'stocks.id': productID }, { $inc: { 'stocks.$.quantity': -quantity } }),
-            Sale.updateOne({ owner: req.user_id }, { $push: { sales: newSaleDetails } })
+            Stock.updateOne({ itemID: productID }, { $inc: { quantity: -quantity } }),
+            Sale.create(newSaleDetails)
          ]);
-         if (productUpdation.modifiedCount === 1 && salesCreation.modifiedCount === 1) {
+         if (productUpdation.modifiedCount === 1 && salesCreation) {
             res.status(200).json(newSaleDetails);
          } else {
             res.status(400).send("Failed to create new order");

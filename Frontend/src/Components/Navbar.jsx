@@ -5,7 +5,7 @@ import NavDropdown from 'react-bootstrap/NavDropdown';
 import { FaUserCircle } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import baseAxios from '../../Config/jwtInterceptor';
+import baseAxios from '../Config/jwtInterceptor';
 
 export const Logo = () => {
    return (
@@ -24,6 +24,7 @@ const UserNavbar = () => {
          localStorage.removeItem("userAuth")
          localStorage.removeItem("customers")
          localStorage.removeItem("inventoryStocks")
+         localStorage.removeItem("salesData")
          navigate("/login")
       } catch (error) {
          toast.error("Something wrong please try again later.");

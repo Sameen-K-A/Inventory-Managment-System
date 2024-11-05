@@ -3,7 +3,7 @@ import Signup from "./Components/Signup";
 import Inventory from "./Components/Inventory";
 import Customer from "./Components/Customer";
 import Sales from "./Components/Sales";
-import { Routes, Route, useLocation, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
 
 import UserAuth from "./Components/Services/UserAuth";

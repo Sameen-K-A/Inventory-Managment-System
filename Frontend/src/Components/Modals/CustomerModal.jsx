@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import baseAxios from '../../../Config/jwtInterceptor';
+import baseAxios from '../../Config/jwtInterceptor';
 import { toast } from 'sonner';
 
 const CustomerModal = ({ setShowModal, customers, setCustomers, handleError }) => {

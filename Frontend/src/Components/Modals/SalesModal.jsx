@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { toast } from "sonner";
-import baseAxios from "../../../Config/jwtInterceptor";
+import baseAxios from "../../Config/jwtInterceptor";
 
-const SalesModal = ({ setShowModal, handleError, setSales }) => {
+const SalesModal = ({ setShowModal, handleError, sales, setSales }) => {
   const [productName, setProductName] = useState('');
   const [customerName, setCustomerName] = useState('');
-  const [itemQuantity, setItemQuantity] = useState(1);
+  const [itemQuantity, setItemQuantity] = useState(0);
   const [itemPrice, setItemPrice] = useState(0);
 
   const [products, setProducts] = useState([]);
@@ -25,15 +25,21 @@ const SalesModal = ({ setShowModal, handleError, setSales }) => {
 
   const handleSave = async () => {
     try {
+      if (itemQuantity <= 0) {
+        toast.error("No quantity available");
+        return;
+      }
       const response = await baseAxios.post("/sales", {
         customerName: customerName,
         productName: productName,
-        productID: choosenProduct.id,
+        productID: choosenProduct.itemID,
         quantity: itemQuantity,
         price: itemPrice
       });
-      setSales((prevSales) => [...prevSales, response.data]);
-      const afterCreatingNewSale = products.map((pro) => (pro.id === choosenProduct.id ? { ...pro, quantity: choosenProduct.quantity - itemQuantity } : pro));
+      const addedNewSale = [...sales, response.data];
+      setSales(addedNewSale);
+      localStorage.setItem("salesData", JSON.stringify(addedNewSale));;
+      const afterCreatingNewSale = products.map((pro) => (pro.itemID === choosenProduct.itemID ? { ...pro, quantity: choosenProduct.quantity - itemQuantity } : pro));
       localStorage.setItem("inventoryStocks", JSON.stringify(afterCreatingNewSale));
       toast.success("New sale is recorded");
       setShowModal(false);
@@ -43,9 +49,9 @@ const SalesModal = ({ setShowModal, handleError, setSales }) => {
   };
 
   const changeSelectedProduct = (e) => {
-    const selectedProduct = products.find((product) => product.id === e.target.value);
+    const selectedProduct = products.find((product) => product.itemID === e.target.value);
     setProductName(selectedProduct?.itemName);
-    setItemPrice(selectedProduct?.price);
+    setItemPrice(selectedProduct?.quantity > 0 ? selectedProduct?.price : 0);
     setChoosenProduct(selectedProduct);
     setItemQuantity(selectedProduct?.quantity > 0 ? 1 : 0);
   };
@@ -90,7 +96,7 @@ const SalesModal = ({ setShowModal, handleError, setSales }) => {
                   <option value="" disabled>Select Product</option>
                   {products.length > 0 ? (
                     products.map((product) => (
-                      <option key={product.id} value={product.id}>{product.itemName}</option>
+                      <option key={product.itemID} value={product.itemID}>{product.itemName}</option>
                     ))
                   ) : (
                     <option value="" disabled>No products found</option>
@@ -104,7 +110,7 @@ const SalesModal = ({ setShowModal, handleError, setSales }) => {
                   <option value="" disabled>Select customer</option>
                   {customers.length > 0 ? (
                     customers.map((customer) => (
-                      <option key={customer.id} value={customer.customerName}>{customer.customerName}</option>
+                      <option key={customer.customerID} value={customer.customerName}>{customer.customerName}</option>
                     ))
                   ) : (
                     <option value="" disabled>No customers found</option>

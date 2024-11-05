@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
 import CustomerModal from './Modals/CustomerModal';
-import baseAxios from "../../Config/jwtInterceptor";
+import baseAxios from "../Config/jwtInterceptor";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import UserNavbar from "./Navbar";
 import NoDataFound from "./NoDataFound";
-import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Customer = () => {
 
@@ -21,8 +20,8 @@ const Customer = () => {
           setCustomers(JSON.parse(localStorageData));
         } else {
           const response = await baseAxios.get("/customer")
-          setCustomers(response.data?.customers);
-          localStorage.setItem("customers", JSON.stringify(response.data.customers));
+          setCustomers(response.data);
+          localStorage.setItem("customers", JSON.stringify(response.data));
         }
       } catch (error) {
         handleError(error);
@@ -50,8 +49,8 @@ const Customer = () => {
 
   const handleDeleteCustomer = async (customerId) => {
     try {
-      await baseAxios.delete("/customer", { data: { customerId: customerId } });
-      const afterDelete = customers.filter((customer) => customer.id !== customerId)
+      await baseAxios.delete("/customer", { params: { customerId: customerId } });
+      const afterDelete = customers.filter((customer) => customer.customerID !== customerId)
       setCustomers(afterDelete);
       localStorage.setItem("customers", JSON.stringify(afterDelete));
       toast.success("Customer deleted successfully.");
@@ -99,13 +98,13 @@ const Customer = () => {
             </thead>
             <tbody>
               {customers.map((customer, index) => (
-                <tr key={customer.id} style={{ verticalAlign: "middle" }}>
+                <tr key={customer.customerID} style={{ verticalAlign: "middle" }}>
                   <td>{index + 1}</td>
                   <td>{customer.customerName}</td>
                   <td>{customer.customerAddress}</td>
                   <td>{customer.customerPhone}</td>
                   <td>
-                    <button className="btn btn-danger" onClick={() => confirmDeleteToast(customer.id)}>Delete</button>
+                    <button className="btn btn-danger" onClick={() => confirmDeleteToast(customer.customerID)}>Delete</button>
                   </td>
                 </tr>
               ))}
