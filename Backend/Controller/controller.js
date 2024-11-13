@@ -1,10 +1,13 @@
 import Stock from "../Model/stockModel.js";
 import User from "../Model/userModel.js";
+import TempUser from "../Model/unVerifiedUser.js";
 import Customer from "../Model/customerModel.js";
 import bcrypt from "bcrypt";
 import { v4 as uuid } from "uuid";
 import { createAccessToken, createRefreshToken } from "../Config/jwtConfig.js";
 import Sale from "../Model/salesModel.js";
+import emailVerificationEmail from "../Config/verifyEmail.js"
+import sendDataEmail from "../Config/salesEmail.js";
 
 class Controller {
 
@@ -51,21 +54,21 @@ class Controller {
    async register(req, res) {
       try {
          const { name, email, password } = req.body;
+
          const alreadyExist = await User.findOne({ email: email });
          if (alreadyExist) {
             console.log("Email already exists.");
             return res.status(409).send("Email already exists.");
-         }
+         };
 
          const hashedPassword = await bcrypt.hash(password, 10);
-
-         const newUser = new User({
+         const newUser = new TempUser({
             name: name,
             email: email,
             password: hashedPassword,
          });
 
-         await newUser.save();
+         await Promise.all([newUser.save(), emailVerificationEmail(email)]);
          res.status(201).send("Registration completed");
       } catch (error) {
          console.log("Registration error", error);
@@ -273,6 +276,17 @@ class Controller {
          res.status(500).send("Something went wrong, please try again later.");
       };
    };
+
+
+   async sendSalestoEmail(req, res) {
+      try {
+         const { enteredEmail, sales } = req.body;
+         await sendDataEmail(enteredEmail, sales);
+         res.status(200).send("success");
+      } catch (error) {
+         res.status(500).send("Something went wrong, please try again later.");
+      }
+   }
 
    async logout(req, res) {
       try {

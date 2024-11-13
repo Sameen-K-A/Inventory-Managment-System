@@ -28,4 +28,7 @@ router.delete("/customer", verifyAccessToken, (req, res) => controller.deleteCus
 router.get("/sales", verifyAccessToken, (req, res) => controller.getSales(req, res))
 router.post("/sales", verifyAccessToken, (req, res) => controller.createSale(req, res))
 
+// send sales to email
+router.post("/sendSalestoEmail", verifyAccessToken, (req, res) => controller.sendSalestoEmail(req, res))
+
 export default router;

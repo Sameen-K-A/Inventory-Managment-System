@@ -22,6 +22,7 @@ const Sales = () => {
                setSales(JSON.parse(localSalesData));
             } else {
                const response = await baseAxios.get("/sales");
+               localStorage.setItem("salesData", JSON.stringify(response.data))
                setSales(response.data);
             }
          } catch (error) {
@@ -31,11 +32,11 @@ const Sales = () => {
    }, []);
 
    const handleError = (error) => {
-      if (error.response.status === 401) {
+      if (error.response?.status === 401) {
          navigate("/login", {
             state: { message: "Authentication failed, Please login." },
          });
-      } else if (error.response.status === 400) {
+      } else if (error.response?.status === 400) {
          toast.error("Failed to update resource.");
       } else {
          console.error(error);
@@ -89,7 +90,7 @@ const Sales = () => {
                <SalesModal setShowModal={setShowModal} handleError={handleError} sales={sales} setSales={setSales} />
             )}
             {showShareModal && (
-               <ShareModal setShowShareModal={setShowShareModal} tableRef={tableRef} />
+               <ShareModal setShowShareModal={setShowShareModal} tableRef={tableRef} sales={sales} />
             )}
          </div>
       </>

@@ -209,17 +209,21 @@ button:active {
    border: 1px solid rgba(0, 0, 0, 0.212);
 }
 
+.print-btn:hover {
+   background-color: rgb(255, 239, 65) !important;
+}
+
 .pdf-btn:hover {
-   background-color: red;
-   color: white;
+   background-color: rgb(169, 0, 0) !important;
+   color: white !important;
 }
 
 .excel-btn:hover {
-   background-color: green;
-   color: white;
+   background-color: green !important;
+   color: white !important;
 }
 
 .email-btn:hover {
-   background-color: #007bff;
-   color: white;
+   background-color: #007bff !important;
+   color: white !important;
 }
