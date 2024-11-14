@@ -5,16 +5,19 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import UserNavbar from "./Navbar";
 import NoDataFound from "./NoDataFound";
+import TableSkeleton from "./Skeleton/TableSkeleton";
 
 const Customer = () => {
 
   const [customers, setCustomers] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     (async () => {
       try {
+        setIsLoading(true);
         const localStorageData = localStorage.getItem("customers");
         if (localStorageData) {
           setCustomers(JSON.parse(localStorageData));
@@ -25,7 +28,9 @@ const Customer = () => {
         }
       } catch (error) {
         handleError(error);
-      };
+      } finally {
+        setIsLoading(false)
+      }
     })();
   }, []);
 
@@ -85,33 +90,37 @@ const Customer = () => {
             <button className="btn btn-dark" onClick={() => setShowModal(true)}>Add new Customer</button>
           </div>
         </div>
-        {customers.length > 0 ? (
-          <table className="table table-bordered mt-5 text-center">
-            <thead>
-              <tr className="table-header">
-                <th scope="col">SL</th>
-                <th scope="col">Name</th>
-                <th scope="col">Address</th>
-                <th scope="col">Mobile</th>
-                <th scope="col">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {customers.map((customer, index) => (
-                <tr key={customer.customerID} style={{ verticalAlign: "middle" }}>
-                  <td>{index + 1}</td>
-                  <td>{customer.customerName}</td>
-                  <td>{customer.customerAddress}</td>
-                  <td>{customer.customerPhone}</td>
-                  <td>
-                    <button className="btn btn-danger" onClick={() => confirmDeleteToast(customer.customerID)}>Delete</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        {isLoading ? (
+          <TableSkeleton />
         ) : (
-          <div className="mt-5"><NoDataFound /></div>
+          customers.length > 0 ? (
+            <table className="table table-bordered mt-5 text-center">
+              <thead>
+                <tr className="table-header">
+                  <th scope="col">SL</th>
+                  <th scope="col">Name</th>
+                  <th scope="col">Address</th>
+                  <th scope="col">Mobile</th>
+                  <th scope="col">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {customers.map((customer, index) => (
+                  <tr key={customer.customerID} style={{ verticalAlign: "middle" }}>
+                    <td>{index + 1}</td>
+                    <td>{customer.customerName}</td>
+                    <td>{customer.customerAddress}</td>
+                    <td>{customer.customerPhone}</td>
+                    <td>
+                      <button className="btn btn-danger" onClick={() => confirmDeleteToast(customer.customerID)}>Delete</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div className="mt-5"><NoDataFound /></div>
+          )
         )}
         {showModal && (
           <CustomerModal setShowModal={setShowModal} customers={customers} setCustomers={setCustomers} handleError={handleError} />

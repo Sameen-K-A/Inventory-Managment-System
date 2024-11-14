@@ -9,6 +9,7 @@ const Login = () => {
   const location = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (location.state?.message === "Registration complete successfully.") {
@@ -24,6 +25,7 @@ const Login = () => {
       email: email,
       password: password,
     };
+    setIsLoading(true);
     try {
       await axios.post(`${import.meta.env.VITE_BASEURL}/login`, data, { withCredentials: true });
       localStorage.setItem("userAuth", JSON.stringify(true));
@@ -37,7 +39,9 @@ const Login = () => {
         toast.error("Something wrong please try again later.");
         console.log("Error from login page", error);
       };
-    };
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -52,10 +56,10 @@ const Login = () => {
           <label>Password</label>
           <input type="password" className="red_input" placeholder="Enter your password" value={password} onChange={(e) => setPassword(e.target.value)} />
 
-          <button type="submit" onClick={(e) => handleLogin(e)}>Submit</button>
+          <button type="submit" onClick={(e) => handleLogin(e)} disabled={isLoading}>{isLoading ? "Loading..." : "Login"}</button>
 
         </form>
-        <p>Don't have an account ? <u onClick={() => navigate("/signup")}> Sign In </u></p>
+        <p>Don't have an account ? <u onClick={() => navigate("/signup")}> Sign Up </u></p>
       </div>
     </div>
   );

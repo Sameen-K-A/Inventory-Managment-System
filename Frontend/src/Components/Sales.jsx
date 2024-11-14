@@ -6,17 +6,20 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import baseAxios from '../Config/jwtInterceptor';
 import UserNavbar from './Navbar';
+import TableSkeleton from './Skeleton/TableSkeleton';
 
 const Sales = () => {
    const [showModal, setShowModal] = useState(false);
    const [showShareModal, setShowShareModal] = useState(false);
    const [sales, setSales] = useState([]);
+   const [isLoading, setIsLoading] = useState(false);
    const navigate = useNavigate();
    const tableRef = useRef();
 
    useEffect(() => {
       (async () => {
          try {
+            setIsLoading(true);
             const localSalesData = localStorage.getItem("salesData");
             if (localSalesData) {
                setSales(JSON.parse(localSalesData));
@@ -27,6 +30,8 @@ const Sales = () => {
             }
          } catch (error) {
             handleError(error);
+         } finally {
+            setIsLoading(false);
          }
       })();
    }, []);
@@ -58,33 +63,37 @@ const Sales = () => {
                   <button className="btn btn-dark" onClick={() => setShowModal(true)}>Add new sale</button>
                </div>
             </div>
-            {sales.length > 0 ? (
-               <table ref={tableRef} className="table table-bordered mt-5 text-center">
-                  <thead>
-                     <tr className="table-header">
-                        <th scope="col">SL</th>
-                        <th scope="col">Product name</th>
-                        <th scope="col">Customer name</th>
-                        <th scope="col">Time & Date</th>
-                        <th scope="col">Quantity</th>
-                        <th scope="col">Total amount</th>
-                     </tr>
-                  </thead>
-                  <tbody>
-                     {sales.map((data, index) => (
-                        <tr key={data.saleID} style={{ verticalAlign: "middle" }}>
-                           <td>{index + 1}</td>
-                           <td>{data.productName}</td>
-                           <td>{data.customerName}</td>
-                           <td>{data.date}</td>
-                           <td>{data.quantity}</td>
-                           <td>{data.price}</td>
-                        </tr>
-                     ))}
-                  </tbody>
-               </table>
+            {isLoading ? (
+               <TableSkeleton />
             ) : (
-               <div className="mt-5"><NoDataFound /></div>
+               sales.length > 0 ? (
+                  <table ref={tableRef} className="table table-bordered mt-5 text-center">
+                     <thead>
+                        <tr className="table-header">
+                           <th scope="col">SL</th>
+                           <th scope="col">Product name</th>
+                           <th scope="col">Customer name</th>
+                           <th scope="col">Time & Date</th>
+                           <th scope="col">Quantity</th>
+                           <th scope="col">Total amount</th>
+                        </tr>
+                     </thead>
+                     <tbody>
+                        {sales.map((data, index) => (
+                           <tr key={data.saleID} style={{ verticalAlign: "middle" }}>
+                              <td>{index + 1}</td>
+                              <td>{data.productName}</td>
+                              <td>{data.customerName}</td>
+                              <td>{data.date}</td>
+                              <td>{data.quantity}</td>
+                              <td>{data.price}</td>
+                           </tr>
+                        ))}
+                     </tbody>
+                  </table>
+               ) : (
+                  <div className="mt-5"><NoDataFound /></div>
+               )
             )}
             {showModal && (
                <SalesModal setShowModal={setShowModal} handleError={handleError} sales={sales} setSales={setSales} />

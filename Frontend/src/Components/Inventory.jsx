@@ -8,12 +8,14 @@ import baseAxios from "../Config/jwtInterceptor";
 import { useNavigate } from 'react-router-dom';
 import UserNavbar from "./Navbar";
 import NoDataFound from './NoDataFound';
+import StockSkeleton from './Skeleton/StockSkeleton';
 
 const Inventory = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedStock, setSelectedStock] = useState(null);
   const [searchData, setSearchData] = useState('');
   const [stocks, setStocks] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleEditClick = (stock) => {
@@ -29,6 +31,7 @@ const Inventory = () => {
   useEffect(() => {
     (async () => {
       try {
+        setIsLoading(true);
         const localStorageData = localStorage.getItem("inventoryStocks");
         if (localStorageData) {
           setStocks(JSON.parse(localStorageData));
@@ -39,6 +42,8 @@ const Inventory = () => {
         }
       } catch (error) {
         handleError(error);
+      } finally {
+        setIsLoading(false);
       }
     })();
   }, []);
@@ -126,27 +131,31 @@ const Inventory = () => {
             <button className="btn btn-dark" onClick={addNewStock}>Add new stock</button>
           </div>
         </div>
-        <div className="ag-courses_box">
-          {stocks.length > 0 ? (
-            stocks.map((stock) => (
-              <div className="ag-courses_item" key={stock.itemID}>
-                <div className="ag-courses-item_link">
-                  <div className="ag-courses-item_bg" />
-                  <p className="ag-courses-item_title">{stock.itemName}</p>
-                  <p className="ag-courses-item_date-box"><span className="ag-courses-item_date">Description: </span>{stock.description}</p>
-                  <p className="ag-courses-item_date-box"><span className="ag-courses-item_date">Quantity: </span>{stock.quantity}</p>
-                  <p className="ag-courses-item_date-box"><span className="ag-courses-item_date">Price: </span>₹{stock.price}.00</p>
-                  <div className="ag-courses-item_actions">
-                    <MdEdit className="icon edit-icon" onClick={() => handleEditClick(stock)} />
-                    <RiDeleteBin6Fill className="icon delete-icon" onClick={() => confirmDeleteToast(stock.itemID)} />
+        {isLoading ? (
+          <StockSkeleton />
+        ) : (
+          <div className="ag-courses_box">
+            {stocks.length > 0 ? (
+              stocks.map((stock) => (
+                <div className="ag-courses_item" key={stock.itemID}>
+                  <div className="ag-courses-item_link">
+                    <div className="ag-courses-item_bg" />
+                    <p className="ag-courses-item_title">{stock.itemName}</p>
+                    <p className="ag-courses-item_date-box"><span className="ag-courses-item_date">Description: </span>{stock.description}</p>
+                    <p className="ag-courses-item_date-box"><span className="ag-courses-item_date">Quantity: </span>{stock.quantity}</p>
+                    <p className="ag-courses-item_date-box"><span className="ag-courses-item_date">Price: </span>₹{stock.price}.00</p>
+                    <div className="ag-courses-item_actions">
+                      <MdEdit className="icon edit-icon" onClick={() => handleEditClick(stock)} />
+                      <RiDeleteBin6Fill className="icon delete-icon" onClick={() => confirmDeleteToast(stock.itemID)} />
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
-          ) : (
-            <NoDataFound />
-          )}
-        </div>
+              ))
+            ) : (
+              <NoDataFound />
+            )}
+          </div>
+        )}
         {showModal && (
           <StockModal setShowModal={setShowModal} selectedStock={selectedStock} stocks={stocks} setStocks={setStocks} />
         )}

@@ -9,6 +9,7 @@ const Signup = () => {
    const [name, setName] = useState("");
    const [email, setEmail] = useState("");
    const [password, setPassword] = useState("");
+   const [isLoading, setIsLoading] = useState(false);
 
    const handleRegistration = async (event) => {
       event.preventDefault();
@@ -30,6 +31,7 @@ const Signup = () => {
          toast.error("Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number.");
          return;
       }
+      setIsLoading(true);
 
       try {
          await axios.post(`${import.meta.env.VITE_BASEURL}/register`, {
@@ -45,6 +47,8 @@ const Signup = () => {
             console.log(error);
             toast.error("Something went wrong, please try again later.");
          }
+      } finally {
+         setIsLoading(false);
       }
    };
 
@@ -62,7 +66,7 @@ const Signup = () => {
             <label htmlFor="password">Password</label>
             <input type="password" className="red_input" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" />
 
-            <button type="submit" onClick={(e) => handleRegistration(e)}>Submit</button>
+            <button type="submit" onClick={(e) => handleRegistration(e)} disabled={isLoading}>{isLoading ? "Loading..." : "Submit"}</button>
             <p>
                Have an account ? <u onClick={() => navigate("/login")}> Login </u>
             </p>

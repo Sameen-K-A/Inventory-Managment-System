@@ -7,6 +7,7 @@ const CustomerModal = ({ setShowModal, customers, setCustomers, handleError }) =
   const [customerName, setCustomerName] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSave = async () => {
     if (!customerName.trim()) {
@@ -35,6 +36,7 @@ const CustomerModal = ({ setShowModal, customers, setCustomers, handleError }) =
       return;
     };
 
+    setIsLoading(true);
     try {
       const response = await baseAxios.post("/customer", {
         customerName: customerName.trim(),
@@ -48,6 +50,8 @@ const CustomerModal = ({ setShowModal, customers, setCustomers, handleError }) =
       toast.success("Customer added successfully!");
     } catch (error) {
       handleError(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -57,7 +61,6 @@ const CustomerModal = ({ setShowModal, customers, setCustomers, handleError }) =
       <div className="modal show d-block" tabIndex="-1" role="dialog">
         <div className="modal-dialog modal-dialog-centered" role="document" onClick={(e) => e.stopPropagation()}>
           <div className="modal-content">
-
             <div className="modal-body p-4">
               <h5 className="modal-title mt-2 mb-4 text-center">Add New Customer</h5>
 
@@ -78,7 +81,9 @@ const CustomerModal = ({ setShowModal, customers, setCustomers, handleError }) =
 
               <div className="d-flex justify-content-end gap-2">
                 <button type="button" className="btn btn-danger" onClick={() => setShowModal(false)}>Close</button>
-                <button type="button" className="btn btn-dark" onClick={handleSave}>Save Customer</button>
+                <button type="button" className="btn btn-dark" onClick={handleSave} disabled={isLoading} >
+                  {isLoading ? 'Loading...' : 'Save'}
+                </button>
               </div>
             </div>
           </div>

@@ -8,6 +8,7 @@ const StockModal = ({ setShowModal, selectedStock, stocks, setStocks }) => {
   const [itemDescription, setItemDescription] = useState('');
   const [itemQuantity, setItemQuantity] = useState('');
   const [itemPrice, setItemPrice] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -45,6 +46,8 @@ const StockModal = ({ setShowModal, selectedStock, stocks, setStocks }) => {
         return;
       };
 
+      isLoading(true)
+
       const data = {
         itemName: itemName,
         description: itemDescription,
@@ -69,7 +72,9 @@ const StockModal = ({ setShowModal, selectedStock, stocks, setStocks }) => {
       setShowModal(false);
     } catch (error) {
       handleError(error);
-    };
+    } finally {
+      setIsLoading(false);
+    }
   };
 
 
@@ -117,7 +122,7 @@ const StockModal = ({ setShowModal, selectedStock, stocks, setStocks }) => {
               </form>
               <div className="d-flex justify-content-end gap-2">
                 <button type="button" className="btn btn-danger" onClick={() => setShowModal(false)}>Close</button>
-                <button type="button" className="btn btn-dark" onClick={handleSave}>Save changes</button>
+                <button type="button" className="btn btn-dark" disabled={isLoading} onClick={handleSave}>{isLoading ? "Loading..." : "Save"}</button>
               </div>
             </div>
           </div>

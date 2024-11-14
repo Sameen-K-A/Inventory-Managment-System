@@ -11,6 +11,7 @@ const SalesModal = ({ setShowModal, handleError, sales, setSales }) => {
   const [products, setProducts] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [choosenProduct, setChoosenProduct] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const inventoryStocks = localStorage.getItem("inventoryStocks");
@@ -24,11 +25,12 @@ const SalesModal = ({ setShowModal, handleError, sales, setSales }) => {
   }, []);
 
   const handleSave = async () => {
+    if (itemQuantity <= 0) {
+      toast.error("No quantity available");
+      return;
+    }
+    setIsLoading(true);
     try {
-      if (itemQuantity <= 0) {
-        toast.error("No quantity available");
-        return;
-      }
       const response = await baseAxios.post("/sales", {
         customerName: customerName,
         productName: productName,
@@ -45,7 +47,9 @@ const SalesModal = ({ setShowModal, handleError, sales, setSales }) => {
       setShowModal(false);
     } catch (error) {
       handleError(error);
-    };
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const changeSelectedProduct = (e) => {
@@ -138,7 +142,9 @@ const SalesModal = ({ setShowModal, handleError, sales, setSales }) => {
               <div className="d-flex justify-content-center gap-2 mt-5">
                 <button type="button" className="btn btn-danger" onClick={() => setShowModal(false)}>Close</button>
                 {choosenProduct && (
-                  <button type="button" className="btn btn-dark" onClick={handleSave}>Save changes</button>
+                  <button type="button" className="btn btn-dark" onClick={handleSave} disabled={isLoading}>
+                    {isLoading ? 'Loading...' : 'Save changes'}
+                  </button>
                 )}
               </div>
             </div>
